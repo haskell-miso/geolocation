@@ -70,7 +70,6 @@ button:active {
   background-color: #f8f9fa;
   border-radius: 12px;
   text-align: left;
-  display: none;
 }
 
 .location-data h2 {
