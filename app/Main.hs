@@ -23,7 +23,7 @@ foreign export javascript "hs_start" main :: IO ()
 #endif
 -----------------------------------------------------------------------------
 main :: IO ()
-main = run $ startApp app
+main = startApp defaultEvents app
 -----------------------------------------------------------------------------
 type Model = Maybe Geolocation
 -----------------------------------------------------------------------------
@@ -31,12 +31,12 @@ app :: App Model Action
 app = (component Nothing updateModel viewModel)
 #ifndef WASM
   { styles =
-    [ Href "assets/style.css"
+    [ Href "assets/style.css" False
     ]
   }
 #endif
 -----------------------------------------------------------------------------
-updateModel :: Action -> Transition Model Action
+updateModel :: Action -> Effect context props Model Action
 updateModel = \case
   GetLocation -> do
     geolocation SetLocation ErrorLocation
@@ -45,10 +45,10 @@ updateModel = \case
   ErrorLocation (GeolocationError _ err) ->
     io_ (consoleError err)
 -----------------------------------------------------------------------------
-viewModel :: Model -> View Model Action
-viewModel x = 
+viewModel :: Model -> View () () Model Action
+viewModel x =
   div_
-    [class_ "container"]
+    [class_ "container"] $
     [ div_ [class_ "location-icon"] ["🍜 📍"]
     , h1_ [] ["Geolocation Demo"]
     , p_
@@ -60,16 +60,15 @@ viewModel x =
       ]
       [ "Get My Location"
       ]
-    , div_
+    ] ++
+    [ div_
         [ class_ "location-data"
-        ] $
+        ]
         [ h2_
           []
           [ "Your Location Data"
           ]
-        ] ++ concat
-        [
-          [ div_
+        , div_
             [ class_ "data-item" ]
             [ span_ [class_ "data-label"] ["Latitude:"]
             , span_ [id_ "latitude", class_ "data-value"] [ text (ms latitude) ]
@@ -84,8 +83,7 @@ viewModel x =
             [ span_ [class_ "data-label"] ["Accuracy:"]
             , span_ [id_ "accuracy", class_ "data-value"] [ text (ms accuracy) ]
             ]
-          ]
-        | Just Geolocation {..} <- pure x
         ]
+    | Just Geolocation {..} <- pure x
     ]
 -----------------------------------------------------------------------------

@@ -22,7 +22,7 @@ foreign export javascript "hs_start" main :: IO ()
 #endif
 -----------------------------------------------------------------------------
 main :: IO ()
-main = run $ startApp app
+main = startApp defaultEvents app
 -----------------------------------------------------------------------------
 type Model = Maybe Geolocation
 -----------------------------------------------------------------------------
@@ -30,12 +30,12 @@ app :: App Model Action
 app = (component Nothing updateModel viewModel)
 #ifndef WASM
   { styles =
-    [ Href "assets/style.css"
+    [ Href "assets/style.css" False
     ]
   }
 #endif
 -----------------------------------------------------------------------------
-updateModel :: Action -> Transition Model Action
+updateModel :: Action -> Effect context props Model Action
 updateModel = \case
   GetLocation -> do
     geolocation SetLocation ErrorLocation
